@@ -32,6 +32,37 @@ export async function loadSessionSummaries(): Promise<SessionSummary[]> {
     });
 }
 
+export interface PlayerActivity {
+  /** Start of the player's most recent non-deleted game, any status. */
+  lastPlayed: string | null;
+  /** Number of finished games. */
+  games: number;
+}
+
+export async function loadPlayerActivity(): Promise<Map<string, PlayerActivity>> {
+  const [sessions, seats] = await Promise.all([db.sessions.toArray(), db.session_players.toArray()]);
+  const liveSessions = new Map(sessions.filter(live).map((s) => [s.id, s]));
+  const activity = new Map<string, PlayerActivity>();
+  for (const seat of seats) {
+    const s = liveSessions.get(seat.session_id);
+    if (!s || !live(seat)) continue;
+    const a = activity.get(seat.player_id) ?? { lastPlayed: null, games: 0 };
+    if (!a.lastPlayed || s.started_at > a.lastPlayed) a.lastPlayed = s.started_at;
+    if (s.status === 'finished') a.games++;
+    activity.set(seat.player_id, a);
+  }
+  return activity;
+}
+
+/** Most recently played first; players who never played follow alphabetically. */
+export function byRecent<T extends { id: string; name: string }>(players: T[], activity: Map<string, PlayerActivity>): T[] {
+  return [...players].sort((a, b) => {
+    const la = activity.get(a.id)?.lastPlayed ?? '';
+    const lb = activity.get(b.id)?.lastPlayed ?? '';
+    return lb.localeCompare(la) || a.name.localeCompare(b.name, 'da');
+  });
+}
+
 export async function loadResultRows(): Promise<ResultRow[]> {
   const [sessions, seats] = await Promise.all([db.sessions.toArray(), db.session_players.toArray()]);
   const finished = new Map(sessions.filter((s) => s.status === 'finished' && live(s)).map((s) => [s.id, s]));

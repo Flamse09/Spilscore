@@ -3,7 +3,6 @@ import { loadExportRows } from '../../db/queries';
 import { shareOrDownload, toCsv } from '../../export/csv';
 import { CustomGames } from '../CustomGames';
 import { LoginForm } from '../LoginForm';
-import { PlayersEditor } from '../PlayersEditor';
 import { SyncDetails } from '../SyncDetails';
 
 export function Settings() {
@@ -23,8 +22,6 @@ export function Settings() {
       <h2>Konto og sync</h2>
       <LoginForm />
       <SyncDetails />
-      <h2>Spillere</h2>
-      <PlayersEditor />
       <h2>Egne spil</h2>
       <CustomGames />
       <h2>Eksport</h2>

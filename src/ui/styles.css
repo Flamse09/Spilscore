@@ -9,6 +9,7 @@
   --warn: #8a4500;
   --warn-bg: #fff3e0;
   --win: #1f7a43;
+  --stripe: #f1f2f4;
   color-scheme: light dark;
 }
 
@@ -24,6 +25,7 @@
     --warn: #ffb35c;
     --warn-bg: #3a2a14;
     --win: #4cc982;
+    --stripe: #24272e;
   }
 }
 
@@ -45,11 +47,11 @@ header.top {
 main { padding: 16px; padding-bottom: calc(env(safe-area-inset-bottom) + 88px); max-width: 720px; margin: 0 auto; }
 nav.bottom {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;
-  display: grid; grid-template-columns: repeat(4, 1fr);
+  display: grid; grid-template-columns: repeat(5, 1fr);
   background: var(--surface); border-top: 1px solid var(--border);
   padding-bottom: env(safe-area-inset-bottom);
 }
-nav.bottom a { min-height: 56px; display: flex; align-items: center; justify-content: center; color: var(--muted); text-decoration: none; font-size: 15px; }
+nav.bottom a { min-height: 56px; display: flex; align-items: center; justify-content: center; color: var(--muted); text-decoration: none; font-size: 13px; }
 nav.bottom a.active { color: var(--accent); font-weight: 600; }
 h1 { font-size: 22px; margin: 0; }
 h2 { font-size: 19px; margin: 20px 0 10px; }
@@ -69,7 +71,7 @@ a.card { display: block; text-decoration: none; color: inherit; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
 .row { display: flex; gap: 8px; align-items: center; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.grid4 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip { min-height: 44px; padding: 8px 14px; border-radius: 999px; }
 .chip.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
@@ -82,7 +84,20 @@ table.score { width: 100%; border-collapse: collapse; font-variant-numeric: tabu
 table.score th, table.score td { padding: 10px 6px; text-align: center; border-bottom: 1px solid var(--border); }
 table.score th:first-child, table.score td:first-child { text-align: left; }
 table.score tr.total td { font-weight: 700; }
-table.score tr.tap { cursor: pointer; }
+table.score tr.tap, table.score td.tap { cursor: pointer; }
+
+/* Score boards (Yatzy sheet and round tables): sticky names row and label column, grid lines, zebra rows. */
+.board { overflow: auto; max-height: calc(100dvh - 240px); border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.board table.score th, .board table.score td { padding: 7px 8px; border-right: 1px solid var(--border); background: var(--surface); }
+.board table.score td:last-child, .board table.score th:last-child { border-right: none; }
+.board table.score th:not(:first-child), .board table.score td:not(:first-child) { min-width: 64px; }
+.board table.score thead th { position: sticky; top: 0; z-index: 2; border-bottom: 2px solid var(--text); font-weight: 700; }
+.board table.score th:first-child, .board table.score td:first-child { position: sticky; left: 0; z-index: 1; white-space: nowrap; }
+.board table.score thead th:first-child { z-index: 3; }
+.board table.score tbody tr:nth-child(even) td { background: var(--stripe); }
+.board table.score tr.sub td { font-style: italic; }
+.board table.score tr.section td { border-top: 2px solid var(--text); }
+.board table.score tr.total td { border-top: 2px solid var(--text); }
 .overlay { position: fixed; inset: 0; z-index: 20; background: rgba(0, 0, 0, 0.45); display: flex; align-items: flex-end; }
 .sheet {
   background: var(--bg); width: 100%; max-height: 85dvh; overflow: auto;

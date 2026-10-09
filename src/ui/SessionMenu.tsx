@@ -1,5 +1,5 @@
 import { useState } from 'preact/hooks';
-import { abandonSession, deleteSession, finishSession, setNote, type SessionBundle } from '../db/actions';
+import { abandonSession, deleteSession, finishSession, reopenSession, setNote, type SessionBundle } from '../db/actions';
 import { navigate } from './router';
 
 export function SessionMenu({ bundle }: { bundle: SessionBundle }) {
@@ -27,6 +27,9 @@ export function SessionMenu({ bundle }: { bundle: SessionBundle }) {
         )}
         {inProgress && (
           <button onClick={() => { if (confirm('Afbryd spillet? Det tæller ikke med i statistikken.')) run(() => abandonSession(session.id)); }}>Afbryd</button>
+        )}
+        {session.status !== 'in_progress' && (
+          <button onClick={() => { if (confirm('Genoptag spillet? Det tæller ikke med i statistikken, før det er afsluttet igen.')) run(() => reopenSession(session.id)); }}>Genoptag</button>
         )}
         <button
           onClick={() => {

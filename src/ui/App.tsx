@@ -3,12 +3,14 @@ import { History } from './screens/History';
 import { Home } from './screens/Home';
 import { NewGame } from './screens/NewGame';
 import { Play } from './screens/Play';
+import { Players } from './screens/Players';
 import { Settings } from './screens/Settings';
 import { Stats } from './screens/Stats';
 import { SyncBadge } from './SyncBadge';
 
 const TABS: { label: string; route: Route }[] = [
   { label: 'Hjem', route: { name: 'home' } },
+  { label: 'Spillere', route: { name: 'players' } },
   { label: 'Historik', route: { name: 'history' } },
   { label: 'Statistik', route: { name: 'stats' } },
   { label: 'Indstillinger', route: { name: 'settings' } },
@@ -22,6 +24,8 @@ function Screen({ route }: { route: Route }) {
       return <NewGame />;
     case 'play':
       return <Play id={route.id} />;
+    case 'players':
+      return <Players />;
     case 'history':
       return <History />;
     case 'stats':

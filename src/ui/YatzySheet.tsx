@@ -46,7 +46,7 @@ export function YatzySheet({ bundle }: { bundle: SessionBundle }) {
 
   return (
     <>
-      <div class="scroll-x">
+      <div class="board">
         <table class="score">
           <thead>
             <tr>
@@ -56,11 +56,11 @@ export function YatzySheet({ bundle }: { bundle: SessionBundle }) {
           </thead>
           <tbody>
             {cats.filter((c) => c.section === 'upper').map(row)}
-            <tr>
+            <tr class="sub section">
               <td class="muted">Sum (bonus ved {YATZY_BONUS[dice].threshold})</td>
               {seats.map((s) => <td key={s.id} class="muted">{totals.get(s.player_id)!.upper}</td>)}
             </tr>
-            <tr>
+            <tr class="sub">
               <td class="muted">Bonus</td>
               {seats.map((s) => <td key={s.id} class="muted">{totals.get(s.player_id)!.bonus}</td>)}
             </tr>

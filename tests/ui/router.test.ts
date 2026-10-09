@@ -8,6 +8,7 @@ describe('router', () => {
     ['#/new', { name: 'new' }],
     ['#/play/abc-123', { name: 'play', id: 'abc-123' }],
     ['#/play', { name: 'home' }],
+    ['#/players', { name: 'players' }],
     ['#/history', { name: 'history' }],
     ['#/stats', { name: 'stats' }],
     ['#/settings', { name: 'settings' }],

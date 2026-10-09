@@ -202,6 +202,12 @@ export async function finishSession(sessionId: string, manual?: Map<string, numb
   await save('sessions', { ...b.session, status: 'finished', ended_at: b.session.ended_at ?? nowIso() });
 }
 
+/** Puts a finished game back in progress. Placements are recomputed when it is finished again. */
+export async function reopenSession(sessionId: string): Promise<void> {
+  const s = await db.sessions.get(sessionId);
+  if (s) await save('sessions', { ...s, status: 'in_progress', ended_at: null });
+}
+
 export async function abandonSession(sessionId: string): Promise<void> {
   const s = await db.sessions.get(sessionId);
   if (s) await save('sessions', { ...s, status: 'abandoned', ended_at: nowIso() });

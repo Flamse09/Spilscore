@@ -31,7 +31,7 @@ export function RoundsBoard({ bundle }: { bundle: SessionBundle }) {
 
   return (
     <>
-      <div class="scroll-x">
+      <div class="board">
         <table class="score">
           <thead>
             <tr>

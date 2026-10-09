@@ -1,5 +1,6 @@
 import { useState } from 'preact/hooks';
 import { addPlayer, gameDef, startSession } from '../../db/actions';
+import { byRecent, loadPlayerActivity } from '../../db/queries';
 import { db } from '../../db/schema';
 import { startProblem } from '../../games/validate';
 import { navigate } from '../router';
@@ -9,7 +10,7 @@ export function NewGame() {
   const data = useLive(
     async () => ({
       games: (await db.games.toArray()).filter((g) => !g.deleted_at).sort((a, b) => Number(b.built_in) - Number(a.built_in) || a.name.localeCompare(b.name, 'da')),
-      players: (await db.players.toArray()).filter((p) => !p.deleted_at && !p.archived).sort((a, b) => a.name.localeCompare(b.name, 'da')),
+      players: byRecent((await db.players.toArray()).filter((p) => !p.deleted_at && !p.archived), await loadPlayerActivity()),
     }),
     [],
   );
