@@ -1,6 +1,7 @@
 import { href, useRoute, type Route } from './router';
 import { Home } from './screens/Home';
 import { NewGame } from './screens/NewGame';
+import { Play } from './screens/Play';
 import { Settings } from './screens/Settings';
 import { SyncBadge } from './SyncBadge';
 
@@ -17,6 +18,8 @@ function Screen({ route }: { route: Route }) {
       return <Home />;
     case 'new':
       return <NewGame />;
+    case 'play':
+      return <Play id={route.id} />;
     case 'settings':
       return <Settings />;
     default:
