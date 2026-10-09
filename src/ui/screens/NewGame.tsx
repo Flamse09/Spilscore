@@ -21,12 +21,13 @@ export function NewGame() {
   const [teamOf, setTeamOf] = useState<Record<string, number>>({});
   const [newName, setNewName] = useState('');
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!data) return null;
   const row = data.games.find((g) => g.id === gameId);
   const game = row ? gameDef(row) : null;
   const useTeams = !!game && (game.config.teams === 'required' || (game.config.teams === 'optional' && teamsOn));
-  const team = (pid: string) => teamOf[pid] ?? seats.indexOf(pid) % teamCount;
+  const team = (pid: string) => (teamOf[pid] ?? seats.indexOf(pid)) % teamCount;
   const teamSizes = useTeams ? Array.from({ length: teamCount }, (_, t) => seats.filter((p) => team(p) === t).length) : null;
   const problem = game ? startProblem(game, seats.length, teamSizes) : 'Vælg et spil';
   const name = (pid: string) => data.players.find((p) => p.id === pid)?.name ?? '?';
@@ -38,13 +39,21 @@ export function NewGame() {
   async function start() {
     if (!game || problem) return;
     setBusy(true);
-    const opts: Record<string, number> = {};
-    for (const o of game.config.options ?? []) opts[o.key] = options[o.key] ?? o.default;
-    const teamNames = useTeams ? Array.from({ length: teamCount }, (_, i) => `Hold ${i + 1}`) : [];
-    const id = await startSession(game.id, opts, seats.map((pid) => ({ playerId: pid, teamIndex: useTeams ? team(pid) : null })), teamNames);
-    navigate({ name: 'play', id });
+    setError(null);
+    let navigated = false;
+    try {
+      const opts: Record<string, number> = {};
+      for (const o of game.config.options ?? []) opts[o.key] = options[o.key] ?? o.default;
+      const teamNames = useTeams ? Array.from({ length: teamCount }, (_, i) => `Hold ${i + 1}`) : [];
+      const id = await startSession(game.id, opts, seats.map((pid) => ({ playerId: pid, teamIndex: useTeams ? team(pid) : null })), teamNames);
+      navigated = true;
+      navigate({ name: 'play', id });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      if (!navigated) setBusy(false);
+    }
   }
-
   return (
     <>
       <h2>Spil</h2>
@@ -131,6 +140,7 @@ export function NewGame() {
 
       <div style="margin-top:20px">
         {problem && game && <p class="muted">{problem}</p>}
+        {error && <p class="warn">Kunne ikke starte spillet: {error}</p>}
         <button class="primary big" disabled={!!problem || busy} onClick={start}>Start</button>
       </div>
     </>
