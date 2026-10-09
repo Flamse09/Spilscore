@@ -1,6 +1,7 @@
 import { useState } from 'preact/hooks';
 import { saveRound, type SessionBundle } from '../db/actions';
 import { davoserjasSums, describeSums } from '../games/davoserjas';
+import { roundsFor } from '../games/results';
 import { parsePoints } from './points';
 
 export function RoundEntry({ bundle, roundNo, onClose }: { bundle: SessionBundle; roundNo: number; onClose: () => void }) {
@@ -12,7 +13,7 @@ export function RoundEntry({ bundle, roundNo, onClose }: { bundle: SessionBundle
   const [neg, setNeg] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(seats.map((s) => [s.player_id, (existing(s.player_id)?.points ?? 0) < 0])),
   );
-  const def = game.config.rounds?.[roundNo - 1];
+  const def = roundsFor(game, session.options)?.[roundNo - 1];
   const parsed = seats.map((s) => parsePoints(values[s.player_id] ?? '', !!neg[s.player_id]));
   const complete = parsed.every((p) => p !== null);
   const sum = parsed.reduce<number>((a, p) => a + (p ?? 0), 0);
@@ -36,6 +37,7 @@ export function RoundEntry({ bundle, roundNo, onClose }: { bundle: SessionBundle
       <div class="sheet stack">
         <h2 style="margin-top:0">{def ? `Runde ${roundNo}: ${def.label}` : `Runde ${roundNo}`}</h2>
         {def && <p class="muted" style="margin:0">{def.rule}</p>}
+        {game.config.hint && <p class="muted" style="margin:0">{game.config.hint}</p>}
         {seats.map((s) => (
           <div key={s.player_id} class="row">
             <label style="flex:1">{s.name}</label>

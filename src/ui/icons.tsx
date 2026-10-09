@@ -30,6 +30,12 @@ export function gameEmoji(key: string): string {
       return '♣️';
     case 'hitster':
       return '🎵';
+    case 'uno':
+      return '🔴';
+    case 'minigolf':
+      return '⛳';
+    case 'mexicantrain':
+      return '🚂';
     default:
       return '⭐';
   }

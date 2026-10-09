@@ -56,4 +56,47 @@ export const BUILT_IN_GAMES: GameDef[] = [
     type: 'result_only',
     config: { scoring: 'high', minPlayers: 2, teams: 'optional', trackScore: true },
   },
+  {
+    id: '00000000-0000-4000-8000-000000000006',
+    key: 'uno',
+    name: 'UNO',
+    type: 'open_rounds',
+    config: {
+      scoring: 'high',
+      minPlayers: 2,
+      teams: 'none',
+      target: 500,
+      hint: 'Rundens vinder får summen af de andres kort. De andre får 0.',
+    },
+  },
+  {
+    id: '00000000-0000-4000-8000-000000000007',
+    key: 'minigolf',
+    name: 'Minigolf',
+    type: 'fixed_rounds',
+    config: {
+      scoring: 'low',
+      minPlayers: 1,
+      teams: 'none',
+      options: [{ key: 'holes', label: 'Huller', values: [9, 12, 18], default: 18 }],
+      roundsFromOption: { option: 'holes', label: 'Hul', rule: 'Antal slag' },
+    },
+  },
+  {
+    id: '00000000-0000-4000-8000-000000000008',
+    key: 'mexicantrain',
+    name: 'Mexican Train',
+    type: 'fixed_rounds',
+    config: {
+      scoring: 'low',
+      minPlayers: 2,
+      maxPlayers: 8,
+      teams: 'none',
+      rounds: Array.from({ length: 13 }, (_, i) => ({
+        key: `double${12 - i}`,
+        label: `Dobbelt ${12 - i}`,
+        rule: 'Point = prikker tilbage på hånden',
+      })),
+    },
+  },
 ];

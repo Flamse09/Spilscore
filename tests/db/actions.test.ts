@@ -1,3 +1,4 @@
+import { BUILT_IN_GAMES } from '../../src/games/builtins';
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/db/schema';
@@ -31,7 +32,7 @@ describe('players', () => {
 
 describe('built-in games', () => {
   it('are seeded without outbox entries', async () => {
-    expect(await db.games.count()).toBe(5);
+    expect(await db.games.count()).toBe(BUILT_IN_GAMES.length);
     expect(await db.outbox.count()).toBe(0);
   });
 });

@@ -26,6 +26,10 @@ export interface GameConfig {
   bustButton?: boolean;
   target?: number;
   rounds?: RoundDef[];
+  /** fixed_rounds whose count comes from an option, e.g. minigolf holes: rounds labelled `${label} 1..n`. */
+  roundsFromOption?: { option: string; label: string; rule: string };
+  /** Short scoring hint shown on the round entry sheet. */
+  hint?: string;
   sheet?: 'yatzy';
   trackScore?: boolean;
   options?: OptionDef[];

@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks';
 import { undoLastRound, type SessionBundle } from '../db/actions';
-import { isGameOver } from '../games/results';
+import { isGameOver, roundsFor } from '../games/results';
 import { FinishPrompt } from './FinishPrompt';
 import { RoundEntry } from './RoundEntry';
 
@@ -22,7 +22,8 @@ export function RoundsBoard({ bundle }: { bundle: SessionBundle }) {
   for (const e of entries) if (e.player_id) totals.set(e.player_id, (totals.get(e.player_id) ?? 0) + e.points);
   const values = [...totals.values()];
   const leader = game.config.scoring === 'high' ? Math.max(...values) : Math.min(...values);
-  const fixed = game.config.rounds;
+  const fixed = roundsFor(game, session.options);
+  const target = game.config.target;
   const nextRound = (rounds.at(-1) ?? 0) + 1;
   const over = isGameOver(game, session.options, seats, entries);
   const canAdd = session.status === 'in_progress' && !over && (!fixed || nextRound <= fixed.length);
@@ -46,6 +47,15 @@ export function RoundsBoard({ bundle }: { bundle: SessionBundle }) {
                 <td key={s.id} class={rounds.length && totals.get(s.player_id) === leader ? 'win' : ''}>{totals.get(s.player_id)}</td>
               ))}
             </tr>
+            {target !== undefined && rounds.length > 0 && (
+              <tr class="sub">
+                <td class="muted">Mangler</td>
+                {seats.map((s) => {
+                  const left = target - (totals.get(s.player_id) ?? 0);
+                  return <td key={s.id} class="muted">{left > 0 ? left : '✓'}</td>;
+                })}
+              </tr>
+            )}
             {rounds.map((r) => (
               <tr key={r} class={canEdit ? 'tap' : ''} onClick={() => canEdit && setEditing(r)}>
                 <td>{fixed?.[r - 1]?.label ?? r}</td>

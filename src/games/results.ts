@@ -1,5 +1,5 @@
 import { rank } from './placement';
-import type { GameDef } from './types';
+import type { GameDef, RoundDef } from './types';
 import { yatzyCategories, yatzyTotals, type Dice } from './yatzy';
 
 export interface SeatLike {
@@ -24,6 +24,15 @@ export interface PlayerResult {
 
 export function participantOf(x: { player_id: string | null; team_id: string | null }): string {
   return (x.team_id ?? x.player_id)!;
+}
+
+/** The round list for a fixed_rounds game: its own rounds, or generated from an option (e.g. minigolf holes). */
+export function roundsFor(game: GameDef, options: Record<string, number>): RoundDef[] | undefined {
+  const gen = game.config.roundsFromOption;
+  if (!gen) return game.config.rounds;
+  const opt = game.config.options?.find((o) => o.key === gen.option);
+  const n = options[gen.option] ?? opt?.default ?? 0;
+  return Array.from({ length: n }, (_, i) => ({ key: `${gen.option}${i + 1}`, label: `${gen.label} ${i + 1}`, rule: gen.rule }));
 }
 
 export function diceOf(options: Record<string, number>): Dice {
@@ -91,7 +100,7 @@ export function isGameOver(
       return [...sumByParticipant(entries).values()].some((t) => t >= target);
     }
     case 'fixed_rounds': {
-      const n = game.config.rounds?.length ?? 0;
+      const n = roundsFor(game, options)?.length ?? 0;
       return ids.every(
         (id) => new Set(entries.filter((e) => e.player_id === id && e.round_no !== null).map((e) => e.round_no)).size >= n,
       );
