@@ -1,8 +1,10 @@
 import { href, useRoute, type Route } from './router';
+import { History } from './screens/History';
 import { Home } from './screens/Home';
 import { NewGame } from './screens/NewGame';
 import { Play } from './screens/Play';
 import { Settings } from './screens/Settings';
+import { Stats } from './screens/Stats';
 import { SyncBadge } from './SyncBadge';
 
 const TABS: { label: string; route: Route }[] = [
@@ -20,10 +22,12 @@ function Screen({ route }: { route: Route }) {
       return <NewGame />;
     case 'play':
       return <Play id={route.id} />;
+    case 'history':
+      return <History />;
+    case 'stats':
+      return <Stats />;
     case 'settings':
       return <Settings />;
-    default:
-      return <p class="muted">Kommer snart.</p>;
   }
 }
 
