@@ -229,11 +229,20 @@ Alle kort gives. Hver spiller får `k = floor(52 / N)` kort, og `r = 52 mod N` k
 - **Vitest, sync:** outbox-rækkefølge, retry og at nyeste vinder, med en fake Supabase-klient.
 - **Manuelt:** gennemspil hvert spil i iPhone-størrelse i browseren og derefter på telefonen efter installation på hjemmeskærmen, inklusive flytilstand midt i et spil.
 
-## 9. Opsætning (kræver Frederik)
+## 9. Opsætning
 
-- Opret Supabase-projekt (gratis) og giv projekt-URL + anon-nøgle (den offentlige nøgle, ikke service-nøglen).
-- Opret GitHub-repoet `Spilscore` og aktivér Pages (Actions som kilde).
-- Læg Supabase-URL og anon-nøgle i GitHub-repoets secrets til keep-alive-jobbet.
+**Gjort (2026-10-09)**
+- Supabase-projekt `qskvbsjjqmpdtwlefxjx` (`https://qskvbsjjqmpdtwlefxjx.supabase.co`). Email-login er slået til.
+- GitHub-repo `github.com/Flamse09/Spilscore`, **offentligt**, så GitHub Pages er gratis.
+
+**Konfiguration**
+- URL og publishable key (`sb_publishable_…`) ligger i `.env` som `VITE_SUPABASE_URL` / `VITE_SUPABASE_KEY` og committes. Begge ender alligevel i den byggede JS på telefonen, og beskyttelsen ligger i RLS. Secret-nøgle og database-password må aldrig i repoet.
+- Repoet er offentligt, så kode og spec er synlige. Data er det ikke.
+
+**Mangler (kræver Frederik)**
+- Kør SQL-migreringen i Supabase SQL Editor. Filen leveres i repoet.
+- Supabase → Authentication → URL Configuration: sæt Site URL til `https://flamse09.github.io/Spilscore/`.
+- Når første workflow er pushet: GitHub → Settings → Pages → Source = "GitHub Actions".
 - Power BI: PostgreSQL-connector mod Supabases connection pooler med en read-only databasebruger, som oprettes via SQL i opsætningen.
 
 ## 10. Uden for scope (v1)
