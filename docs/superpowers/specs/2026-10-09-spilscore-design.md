@@ -209,7 +209,7 @@ Alle kort gives. Hver spiller får `k = floor(52 / N)` kort, og `r = 52 mod N` k
 - **Pull** henter rækker med `updated_at` efter sidste pull-tidspunkt. Det bruges til at gendanne data på en ny enhed eller efter, at iOS har ryddet lageret.
 - **Konflikter:** nyeste `updated_at` vinder.
 - **Fejl:** rækker bliver i outbox og forsøges igen med eksponentiel backoff (maks. 5 min). Status vises i headeren. Data på enheden slettes aldrig af en fejlet sync.
-- **Login:** Supabase email-OTP: en 6-cifret kode på mail, som indtastes i appen. Det er ikke et magic link, fordi et link på iOS åbner i Safari i stedet for den installerede PWA, og så bliver PWA'en aldrig logget ind. Sessionen fornyes automatisk. Appen virker fuldt ud uden login, og sync starter, når man er logget ind.
+- **Login:** Supabase e-mail og adgangskode, uden bekræftelsesmail ("Confirm email" er slået fra). Der sendes ingen mails. Magic link er fravalgt, fordi linket på iOS åbner i Safari og ikke i den installerede PWA. Kode på mail er fravalgt (ændret 2026-10-09), fordi Supabase kun lader skabelonerne redigere med egen SMTP, og standardmailen indeholder kun et link. iOS-nøgleringen kan gemme adgangskoden. Sessionen fornyes automatisk. Appen virker fuldt ud uden login, og sync starter, når man er logget ind.
 - **Keep-alive:** et GitHub Actions-cronjob kører hver mandag og torsdag og laver en let `select` mod Supabase, så gratisprojektet ikke går i dvale.
 
 ## 7. Fejlhåndtering
@@ -242,8 +242,9 @@ Alle kort gives. Hver spiller får `k = floor(52 / N)` kort, og `r = 52 mod N` k
 
 **Mangler (kræver Frederik)**
 - Kør SQL-migreringen i Supabase SQL Editor. Filen leveres i repoet.
-- Supabase → Authentication → Emails: `{{ .Token }}` skal stå i BÅDE "Confirm signup"- og "Magic Link"-skabelonen, så mailen viser koden. En helt ny adresse får "Confirm signup"-mailen, ikke "Magic Link".
-- Efter første vellykkede login: slå "Allow new users to sign up" fra, så ingen andre kan oprette sig. Dette trin er påkrævet.
+- Supabase → Authentication → Sign In / Providers → Email: slå "Confirm email" fra. Der kræves ingen SMTP og ingen ændring af mailskabeloner.
+- Opret kontoen i appen under Indstillinger med "Opret konto".
+- Bagefter: slå "Allow new users to sign up" fra, så ingen andre kan oprette sig. Dette trin er påkrævet.
 - Når første workflow er pushet: GitHub → Settings → Pages → Source = "GitHub Actions".
 - Power BI: PostgreSQL-connector mod Supabases connection pooler med en read-only databasebruger, som oprettes via SQL i opsætningen.
 

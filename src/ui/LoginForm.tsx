@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'preact/hooks';
-import { onAuthChange, sendCode, signOut, verifyCode } from '../sync/auth';
+import { onAuthChange, signIn, signOut, signUp } from '../sync/auth';
+
+const MIN_PASSWORD = 6;
 
 export function LoginForm() {
   const [user, setUser] = useState<string | null>(null);
   const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
-  const [sent, setSent] = useState(false);
+  const [password, setPassword] = useState('');
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -20,48 +21,41 @@ export function LoginForm() {
     );
   }
 
+  const ready = email.includes('@') && password.length >= MIN_PASSWORD;
+
+  async function run(action: (email: string, password: string) => Promise<string | null>) {
+    setBusy(true);
+    setMsg(null);
+    try {
+      setMsg(await action(email, password));
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
-    <div class="card stack">
+    <form
+      class="card stack"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (ready && !busy) run(signIn);
+      }}
+    >
       <p class="muted" style="margin:0">Log ind for at gemme dine spil i skyen. Appen virker også uden.</p>
-      <input type="email" autoComplete="email" placeholder="Din e-mail" value={email} onInput={(e) => setEmail(e.currentTarget.value)} />
-      {!sent ? (
-        <button
-          class="primary"
-          disabled={busy || !email.includes('@')}
-          onClick={async () => {
-            setBusy(true);
-            try {
-              const err = await sendCode(email);
-              setMsg(err ?? 'Koden er sendt. Tjek din mail.');
-              if (!err) setSent(true);
-            } finally {
-              setBusy(false);
-            }
-          }}
-        >
-          Send kode
-        </button>
-      ) : (
-        <>
-          <input inputMode="numeric" autoComplete="one-time-code" placeholder="Kode fra mailen" value={code} onInput={(e) => setCode(e.currentTarget.value)} />
-          <button
-            class="primary"
-            disabled={busy || code.trim().length < 6}
-            onClick={async () => {
-              setBusy(true);
-              try {
-                setMsg(await verifyCode(email, code));
-              } finally {
-                setBusy(false);
-              }
-            }}
-          >
-            Log ind
-          </button>
-          <button onClick={() => { setSent(false); setCode(''); setMsg(null); }}>Send ny kode</button>
-        </>
-      )}
-      {msg && <p class="muted" style="margin:0">{msg}</p>}
-    </div>
+      <input type="email" name="email" autoComplete="username" placeholder="Din e-mail" value={email} onInput={(e) => setEmail(e.currentTarget.value)} />
+      <input
+        type="password"
+        name="password"
+        autoComplete="current-password"
+        placeholder={`Adgangskode (mindst ${MIN_PASSWORD} tegn)`}
+        value={password}
+        onInput={(e) => setPassword(e.currentTarget.value)}
+      />
+      <button type="submit" class="primary" disabled={busy || !ready}>Log ind</button>
+      <button type="button" disabled={busy || !ready} onClick={() => run(signUp)}>Opret konto</button>
+      {msg && <p class="warn" style="margin:0">{msg}</p>}
+    </form>
   );
 }
