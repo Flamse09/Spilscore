@@ -145,11 +145,12 @@ Alle kort gives. Hver spiller får `k = floor(52 / N)` kort, og `r = 52 mod N` k
 | 3 | Damer | 5 point pr. dame | Multiplum af 5 fra `20 − 5·min(r,4)` til `20` |
 | 4 | Klør konge | 15 point | `15`, eller `0`/`15` hvis `r > 0` |
 | 5 | Første og sidste stik | 10 point hver | Præcis `20` |
-| 6 | Kabalen | 1 point pr. kort tilbage på hånden | Ingen |
+| 6 | Alle regler | Runde 1–5 gælder på én gang | Alle mulige summer af runde 1–5 (præcis 81 ved 4 spillere) |
+| 7 | Kabalen | 1 point pr. kort tilbage på hånden | Ingen |
 
 - Sum-tjek er en blød advarsel ("Summen er 12, forventet 13. Gem alligevel?") og blokerer aldrig.
 - Når `r = 0` (4 spillere), er alle tjek præcise.
-- Spillet slutter efter runde 6. Laveste total vinder.
+- Spillet slutter efter runde 7. Laveste total vinder.
 
 ### Hitster (`result_only`, `teams: 'optional'`, `trackScore: true`)
 - Vælg hold og spillere og markér placeringer. Valgfrit: antal kort pr. hold.
@@ -208,7 +209,7 @@ Alle kort gives. Hver spiller får `k = floor(52 / N)` kort, og `r = 52 mod N` k
 - **Pull** henter rækker med `updated_at` efter sidste pull-tidspunkt. Det bruges til at gendanne data på en ny enhed eller efter, at iOS har ryddet lageret.
 - **Konflikter:** nyeste `updated_at` vinder.
 - **Fejl:** rækker bliver i outbox og forsøges igen med eksponentiel backoff (maks. 5 min). Status vises i headeren. Data på enheden slettes aldrig af en fejlet sync.
-- **Login:** Supabase magic link på mail. Sessionen fornyes automatisk. Appen virker fuldt ud uden login, og sync starter, når man er logget ind.
+- **Login:** Supabase email-OTP: en 6-cifret kode på mail, som indtastes i appen. Det er ikke et magic link, fordi et link på iOS åbner i Safari i stedet for den installerede PWA, og så bliver PWA'en aldrig logget ind. Sessionen fornyes automatisk. Appen virker fuldt ud uden login, og sync starter, når man er logget ind.
 - **Keep-alive:** et GitHub Actions-cronjob kører hver mandag og laver en let `select` mod Supabase, så gratisprojektet ikke går i dvale.
 
 ## 7. Fejlhåndtering
@@ -241,7 +242,8 @@ Alle kort gives. Hver spiller får `k = floor(52 / N)` kort, og `r = 52 mod N` k
 
 **Mangler (kræver Frederik)**
 - Kør SQL-migreringen i Supabase SQL Editor. Filen leveres i repoet.
-- Supabase → Authentication → URL Configuration: sæt Site URL til `https://flamse09.github.io/Spilscore/`.
+- Supabase → Authentication → Emails → "Magic Link"-skabelonen skal indeholde `{{ .Token }}`, så mailen viser koden.
+- Efter første login: overvej at slå "Allow new users to sign up" fra, så ingen andre kan oprette sig.
 - Når første workflow er pushet: GitHub → Settings → Pages → Source = "GitHub Actions".
 - Power BI: PostgreSQL-connector mod Supabases connection pooler med en read-only databasebruger, som oprettes via SQL i opsætningen.
 
