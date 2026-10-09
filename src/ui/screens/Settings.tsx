@@ -1,6 +1,7 @@
 import { useState } from 'preact/hooks';
 import { loadExportRows } from '../../db/queries';
 import { shareOrDownload, toCsv } from '../../export/csv';
+import { CustomGames } from '../CustomGames';
 import { LoginForm } from '../LoginForm';
 import { PlayersEditor } from '../PlayersEditor';
 
@@ -22,6 +23,8 @@ export function Settings() {
       <LoginForm />
       <h2>Spillere</h2>
       <PlayersEditor />
+      <h2>Egne spil</h2>
+      <CustomGames />
       <h2>Eksport</h2>
       <div class="card stack">
         <button onClick={() => exportCsv('spilscore-resultater.csv', 'results')}>Resultater (CSV)</button>

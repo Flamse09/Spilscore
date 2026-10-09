@@ -1,5 +1,6 @@
 import { loadSessionBundle } from '../../db/actions';
 import { ResultBanner } from '../ResultBanner';
+import { ResultEntry } from '../ResultEntry';
 import { RoundsBoard } from '../RoundsBoard';
 import { SessionMenu } from '../SessionMenu';
 import { useLive } from '../useLive';
@@ -20,7 +21,7 @@ export function Play({ id }: { id: string }) {
       {game.type === 'scoresheet' ? (
         <YatzySheet bundle={bundle} />
       ) : game.type === 'result_only' ? (
-        <p class="muted">Resultatindtastning kommer i næste trin.</p>
+        <ResultEntry bundle={bundle} />
       ) : (
         <RoundsBoard bundle={bundle} />
       )}
