@@ -210,7 +210,7 @@ Alle kort gives. Hver spiller får `k = floor(52 / N)` kort, og `r = 52 mod N` k
 - **Konflikter:** nyeste `updated_at` vinder.
 - **Fejl:** rækker bliver i outbox og forsøges igen med eksponentiel backoff (maks. 5 min). Status vises i headeren. Data på enheden slettes aldrig af en fejlet sync.
 - **Login:** Supabase email-OTP: en 6-cifret kode på mail, som indtastes i appen. Det er ikke et magic link, fordi et link på iOS åbner i Safari i stedet for den installerede PWA, og så bliver PWA'en aldrig logget ind. Sessionen fornyes automatisk. Appen virker fuldt ud uden login, og sync starter, når man er logget ind.
-- **Keep-alive:** et GitHub Actions-cronjob kører hver mandag og laver en let `select` mod Supabase, så gratisprojektet ikke går i dvale.
+- **Keep-alive:** et GitHub Actions-cronjob kører hver mandag og torsdag og laver en let `select` mod Supabase, så gratisprojektet ikke går i dvale.
 
 ## 7. Fejlhåndtering
 
@@ -242,8 +242,8 @@ Alle kort gives. Hver spiller får `k = floor(52 / N)` kort, og `r = 52 mod N` k
 
 **Mangler (kræver Frederik)**
 - Kør SQL-migreringen i Supabase SQL Editor. Filen leveres i repoet.
-- Supabase → Authentication → Emails → "Magic Link"-skabelonen skal indeholde `{{ .Token }}`, så mailen viser koden.
-- Efter første login: overvej at slå "Allow new users to sign up" fra, så ingen andre kan oprette sig.
+- Supabase → Authentication → Emails: `{{ .Token }}` skal stå i BÅDE "Confirm signup"- og "Magic Link"-skabelonen, så mailen viser koden. En helt ny adresse får "Confirm signup"-mailen, ikke "Magic Link".
+- Efter første vellykkede login: slå "Allow new users to sign up" fra, så ingen andre kan oprette sig. Dette trin er påkrævet.
 - Når første workflow er pushet: GitHub → Settings → Pages → Source = "GitHub Actions".
 - Power BI: PostgreSQL-connector mod Supabases connection pooler med en read-only databasebruger, som oprettes via SQL i opsætningen.
 
