@@ -1,7 +1,7 @@
 name: Supabase keep-alive
 on:
   schedule:
-    - cron: '0 6 * * 1'
+    - cron: '0 6 * * 1,4'
   workflow_dispatch:
 
 permissions:
@@ -17,4 +17,7 @@ jobs:
         run: |
           set -a; source .env; set +a
           curl -fsS "$VITE_SUPABASE_URL/rest/v1/games?select=id&limit=1" -H "apikey: $VITE_SUPABASE_KEY"
-      - uses: gautamkrishnar/keepalive-workflow@v2
+      - name: Keep this schedule enabled
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/keepalive.yml/enable"
