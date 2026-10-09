@@ -3,6 +3,7 @@ import { ResultBanner } from '../ResultBanner';
 import { RoundsBoard } from '../RoundsBoard';
 import { SessionMenu } from '../SessionMenu';
 import { useLive } from '../useLive';
+import { YatzySheet } from '../YatzySheet';
 
 export function Play({ id }: { id: string }) {
   const bundle = useLive(() => loadSessionBundle(id), [id]);
@@ -17,7 +18,7 @@ export function Play({ id }: { id: string }) {
       {session.status === 'finished' && <ResultBanner bundle={bundle} />}
       {session.status === 'abandoned' && <p class="warn">Spillet er afbrudt og tæller ikke med i statistikken.</p>}
       {game.type === 'scoresheet' ? (
-        <p class="muted">Yatzy-ark kommer i næste trin.</p>
+        <YatzySheet bundle={bundle} />
       ) : game.type === 'result_only' ? (
         <p class="muted">Resultatindtastning kommer i næste trin.</p>
       ) : (
