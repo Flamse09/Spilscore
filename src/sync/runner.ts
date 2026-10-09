@@ -35,6 +35,7 @@ export function subscribe(fn: (s: SyncStatus) => void): () => void {
 
 let client: RemoteClient | null = null;
 let running = false;
+let again = false;
 let failures = 0;
 let loopTimer: ReturnType<typeof setTimeout> | undefined;
 let debounceTimer: ReturnType<typeof setTimeout> | undefined;
@@ -45,7 +46,11 @@ function schedule() {
 }
 
 export async function syncNow(): Promise<void> {
-  if (!client || running) return;
+  if (!client) return;
+  if (running) {
+    again = true;
+    return;
+  }
   if (!navigator.onLine) {
     setStatus({ state: 'offline' });
     schedule();
@@ -74,6 +79,10 @@ export async function syncNow(): Promise<void> {
   } finally {
     running = false;
     schedule();
+    if (again) {
+      again = false;
+      requestSync();
+    }
   }
 }
 
@@ -85,9 +94,9 @@ export function requestSync(delay = 2_000): void {
 export function startSyncLoop(c: RemoteClient): void {
   client = c;
   liveQuery(() => db.outbox.count()).subscribe((n) => {
-    const grew = n > status.pending;
+    const changed = n !== status.pending;
     setStatus({ pending: n });
-    if (grew) requestSync();
+    if (changed && n > 0) requestSync();
   });
   window.addEventListener('online', () => requestSync(0));
   window.addEventListener('offline', () => setStatus({ state: 'offline' }));
