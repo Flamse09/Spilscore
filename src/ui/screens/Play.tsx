@@ -4,10 +4,12 @@ import { ResultEntry } from '../ResultEntry';
 import { RoundsBoard } from '../RoundsBoard';
 import { SessionMenu } from '../SessionMenu';
 import { useLive } from '../useLive';
+import { useWakeLock } from '../useWakeLock';
 import { YatzySheet } from '../YatzySheet';
 
 export function Play({ id }: { id: string }) {
   const bundle = useLive(() => loadSessionBundle(id), [id]);
+  useWakeLock(bundle?.session.status === 'in_progress');
   if (bundle === undefined) return null;
   if (bundle === null) return <p>Spillet findes ikke.</p>;
   const { session, game } = bundle;
