@@ -4,6 +4,7 @@ import { shareOrDownload, toCsv } from '../../export/csv';
 import { CustomGames } from '../CustomGames';
 import { LoginForm } from '../LoginForm';
 import { PlayersEditor } from '../PlayersEditor';
+import { SyncDetails } from '../SyncDetails';
 
 export function Settings() {
   const [error, setError] = useState<string | null>(null);
@@ -21,6 +22,7 @@ export function Settings() {
     <>
       <h2>Konto og sync</h2>
       <LoginForm />
+      <SyncDetails />
       <h2>Spillere</h2>
       <PlayersEditor />
       <h2>Egne spil</h2>

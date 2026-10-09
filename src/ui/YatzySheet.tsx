@@ -10,6 +10,17 @@ export function YatzySheet({ bundle }: { bundle: SessionBundle }) {
   const cats = yatzyCategories(dice);
   const [pick, setPick] = useState<{ playerId: string; name: string; cat: YatzyCategory } | null>(null);
   const editable = session.status !== 'abandoned';
+  const [error, setError] = useState<string | null>(null);
+
+  async function run(action: () => Promise<void>, closePicker: boolean) {
+    setError(null);
+    try {
+      await action();
+      if (closePicker) setPick(null);
+    } catch (e) {
+      setError(`Kunne ikke gemme: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
 
   const filled = new Map(
     seats.map((s) => [
@@ -63,8 +74,9 @@ export function YatzySheet({ bundle }: { bundle: SessionBundle }) {
       </div>
       <div class="stack" style="margin-top:12px">
         {session.status === 'in_progress' && entries.length > 0 && (
-          <button onClick={() => undoLastSheetEntry(session.id)}>Fortryd sidste</button>
+          <button onClick={() => run(() => undoLastSheetEntry(session.id), false)}>Fortryd sidste</button>
         )}
+        {!pick && error && <p class="warn" style="margin:0">{error}</p>}
         <FinishPrompt bundle={bundle} />
       </div>
       {pick && (
@@ -76,10 +88,7 @@ export function YatzySheet({ bundle }: { bundle: SessionBundle }) {
                 <button
                   key={v}
                   class={filled.get(pick.playerId)![pick.cat.key] === v ? 'primary' : ''}
-                  onClick={async () => {
-                    await setSheetValue(session.id, pick.playerId, pick.cat.key, v);
-                    setPick(null);
-                  }}
+                  onClick={() => run(() => setSheetValue(session.id, pick.playerId, pick.cat.key, v), true)}
                 >
                   {v === 0 ? '– (0)' : v}
                 </button>
@@ -87,14 +96,12 @@ export function YatzySheet({ bundle }: { bundle: SessionBundle }) {
             </div>
             {filled.get(pick.playerId)![pick.cat.key] !== undefined && (
               <button
-                onClick={async () => {
-                  await setSheetValue(session.id, pick.playerId, pick.cat.key, null);
-                  setPick(null);
-                }}
+                onClick={() => run(() => setSheetValue(session.id, pick.playerId, pick.cat.key, null), true)}
               >
                 Ryd felt
               </button>
             )}
+            {error && <p class="warn" style="margin:0">{error}</p>}
             <button onClick={() => setPick(null)}>Annullér</button>
           </div>
         </div>

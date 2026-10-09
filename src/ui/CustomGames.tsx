@@ -11,13 +11,25 @@ export function CustomGames() {
   const [teams, setTeams] = useState<TeamMode>('optional');
   const [trackScore, setTrackScore] = useState(false);
   const [scoring, setScoring] = useState<Scoring>('high');
+  const [error, setError] = useState<string | null>(null);
+
+  async function run(action: () => Promise<unknown>): Promise<boolean> {
+    setError(null);
+    try {
+      await action();
+      return true;
+    } catch (e) {
+      setError(`Kunne ikke gemme: ${e instanceof Error ? e.message : String(e)}`);
+      return false;
+    }
+  }
   if (!games) return null;
   return (
     <div class="card stack">
       {games.map((g) => (
         <div key={g.id} class="row" style="justify-content:space-between">
           <span>{g.name}</span>
-          <button onClick={() => { if (confirm(`Fjern ${g.name}? Gamle spil bevares.`)) save('games', { ...g, deleted_at: nowIso() }); }}>Fjern</button>
+          <button onClick={() => { if (confirm(`Fjern ${g.name}? Gamle spil bevares.`)) run(() => save('games', { ...g, deleted_at: nowIso() })); }}>Fjern</button>
         </div>
       ))}
       <input placeholder="Navn på spil" value={name} onInput={(e) => setName(e.currentTarget.value)} />
@@ -37,12 +49,12 @@ export function CustomGames() {
         class="primary"
         disabled={!name.trim()}
         onClick={async () => {
-          await addCustomGame(name, { teams, trackScore, scoring });
-          setName('');
+          if (await run(() => addCustomGame(name, { teams, trackScore, scoring }))) setName('');
         }}
       >
         Opret spil
       </button>
+      {error && <p class="warn" style="margin:0">{error}</p>}
     </div>
   );
 }

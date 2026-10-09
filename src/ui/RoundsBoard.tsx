@@ -7,6 +7,16 @@ import { RoundEntry } from './RoundEntry';
 export function RoundsBoard({ bundle }: { bundle: SessionBundle }) {
   const { session, game, seats, entries } = bundle;
   const [editing, setEditing] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function undo() {
+    setError(null);
+    try {
+      await undoLastRound(session.id);
+    } catch (e) {
+      setError(`Kunne ikke gemme: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
   const rounds = [...new Set(entries.map((e) => e.round_no).filter((r): r is number => r !== null))].sort((a, b) => a - b);
   const totals = new Map(seats.map((s) => [s.player_id, 0]));
   for (const e of entries) if (e.player_id) totals.set(e.player_id, (totals.get(e.player_id) ?? 0) + e.points);
@@ -50,8 +60,9 @@ export function RoundsBoard({ bundle }: { bundle: SessionBundle }) {
       <div class="stack" style="margin-top:12px">
         {canAdd && <button class="primary big" onClick={() => setEditing(nextRound)}>Ny runde</button>}
         {session.status === 'in_progress' && rounds.length > 0 && (
-          <button onClick={() => { if (confirm('Fjern sidste runde?')) undoLastRound(session.id); }}>Fortryd sidste runde</button>
+          <button onClick={() => { if (confirm('Fjern sidste runde?')) undo(); }}>Fortryd sidste runde</button>
         )}
+        {error && <p class="warn" style="margin:0">{error}</p>}
         <FinishPrompt bundle={bundle} />
       </div>
       {editing !== null && <RoundEntry bundle={bundle} roundNo={editing} onClose={() => setEditing(null)} />}

@@ -7,6 +7,7 @@ export function LoginForm() {
   const [code, setCode] = useState('');
   const [sent, setSent] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => onAuthChange(setUser), []);
 
@@ -26,24 +27,33 @@ export function LoginForm() {
       {!sent ? (
         <button
           class="primary"
-          disabled={!email.includes('@')}
+          disabled={busy || !email.includes('@')}
           onClick={async () => {
-            const err = await sendCode(email);
-            setMsg(err ?? 'Koden er sendt. Tjek din mail.');
-            if (!err) setSent(true);
+            setBusy(true);
+            try {
+              const err = await sendCode(email);
+              setMsg(err ?? 'Koden er sendt. Tjek din mail.');
+              if (!err) setSent(true);
+            } finally {
+              setBusy(false);
+            }
           }}
         >
           Send kode
         </button>
       ) : (
         <>
-          <input inputMode="numeric" autoComplete="one-time-code" placeholder="6-cifret kode" value={code} onInput={(e) => setCode(e.currentTarget.value)} />
+          <input inputMode="numeric" autoComplete="one-time-code" placeholder="Kode fra mailen" value={code} onInput={(e) => setCode(e.currentTarget.value)} />
           <button
             class="primary"
-            disabled={code.trim().length < 6}
+            disabled={busy || code.trim().length < 6}
             onClick={async () => {
-              const err = await verifyCode(email, code);
-              setMsg(err);
+              setBusy(true);
+              try {
+                setMsg(await verifyCode(email, code));
+              } finally {
+                setBusy(false);
+              }
             }}
           >
             Log ind

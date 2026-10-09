@@ -9,6 +9,18 @@ export function PlayersEditor() {
     [],
   );
   const [name, setName] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  async function run(action: () => Promise<unknown>): Promise<boolean> {
+    setError(null);
+    try {
+      await action();
+      return true;
+    } catch (e) {
+      setError(`Kunne ikke gemme: ${e instanceof Error ? e.message : String(e)}`);
+      return false;
+    }
+  }
   if (!players) return null;
   return (
     <div class="card stack">
@@ -19,10 +31,10 @@ export function PlayersEditor() {
             style={p.archived ? 'opacity:.5' : ''}
             onChange={(e) => {
               const v = e.currentTarget.value.trim();
-              if (v && v !== p.name) updatePlayer(p, { name: v });
+              if (v && v !== p.name) run(() => updatePlayer(p, { name: v }));
             }}
           />
-          <button onClick={() => updatePlayer(p, { archived: !p.archived })}>{p.archived ? 'Gendan' : 'Arkivér'}</button>
+          <button onClick={() => run(() => updatePlayer(p, { archived: !p.archived }))}>{p.archived ? 'Gendan' : 'Arkivér'}</button>
         </div>
       ))}
       <div class="row">
@@ -31,13 +43,13 @@ export function PlayersEditor() {
           class="primary"
           disabled={!name.trim()}
           onClick={async () => {
-            await addPlayer(name);
-            setName('');
+            if (await run(() => addPlayer(name))) setName('');
           }}
         >
           Tilføj
         </button>
       </div>
+      {error && <p class="warn" style="margin:0">{error}</p>}
     </div>
   );
 }

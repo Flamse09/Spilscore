@@ -19,13 +19,20 @@ export function RoundEntry({ bundle, roundNo, onClose }: { bundle: SessionBundle
   const allowed = def?.check ? davoserjasSums(def.check, seats.length) : null;
   const sumWarning = allowed && complete && !allowed.includes(sum) ? `Summen er ${sum}, forventet ${describeSums(allowed)}.` : null;
 
+  const [error, setError] = useState<string | null>(null);
+
   async function save() {
-    await saveRound(session.id, roundNo, seats.map((s, i) => ({ playerId: s.player_id, points: parsed[i]! })), def?.key ?? null);
-    onClose();
+    setError(null);
+    try {
+      await saveRound(session.id, roundNo, seats.map((s, i) => ({ playerId: s.player_id, points: parsed[i]! })), def?.key ?? null);
+      onClose();
+    } catch (e) {
+      setError(`Kunne ikke gemme: ${e instanceof Error ? e.message : String(e)}`);
+    }
   }
 
   return (
-    <div class="overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div class="overlay">
       <div class="sheet stack">
         <h2 style="margin-top:0">{def ? `Runde ${roundNo}: ${def.label}` : `Runde ${roundNo}`}</h2>
         {def && <p class="muted" style="margin:0">{def.rule}</p>}
@@ -33,10 +40,10 @@ export function RoundEntry({ bundle, roundNo, onClose }: { bundle: SessionBundle
           <div key={s.player_id} class="row">
             <label style="flex:1">{s.name}</label>
             {game.config.bustButton && (
-              <button onClick={() => { setValues({ ...values, [s.player_id]: '0' }); setNeg({ ...neg, [s.player_id]: false }); }}>Bust</button>
+              <button onClick={() => { setValues((v) => ({ ...v, [s.player_id]: '0' })); setNeg((n) => ({ ...n, [s.player_id]: false })); }}>Bust</button>
             )}
             {game.config.allowNegative && (
-              <button style="min-width:48px" onClick={() => setNeg({ ...neg, [s.player_id]: !neg[s.player_id] })}>
+              <button style="min-width:48px" onClick={() => setNeg((n) => ({ ...n, [s.player_id]: !n[s.player_id] }))}>
                 {neg[s.player_id] ? '−' : '+'}
               </button>
             )}
@@ -45,12 +52,13 @@ export function RoundEntry({ bundle, roundNo, onClose }: { bundle: SessionBundle
               pattern="[0-9]*"
               style="width:96px;text-align:right"
               value={values[s.player_id]}
-              onInput={(e) => setValues({ ...values, [s.player_id]: e.currentTarget.value })}
+              onInput={(e) => { const x = e.currentTarget.value; setValues((v) => ({ ...v, [s.player_id]: x })); }}
             />
           </div>
         ))}
         <p class="muted" style="margin:0">Sum: {sum}</p>
         {sumWarning && <p class="warn" style="margin:0">{sumWarning} Du kan gemme alligevel.</p>}
+        {error && <p class="warn" style="margin:0">{error}</p>}
         <div class="grid2">
           <button onClick={onClose}>Annullér</button>
           <button class="primary" disabled={!complete} onClick={save}>Gem</button>

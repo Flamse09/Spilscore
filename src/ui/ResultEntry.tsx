@@ -18,16 +18,23 @@ export function ResultEntry({ bundle }: { bundle: SessionBundle }) {
   const allPlaced = participants.every((p) => place[p.id] >= 1);
   const editable = session.status !== 'abandoned';
 
+  const [error, setError] = useState<string | null>(null);
+
   async function save() {
-    await saveResult(
-      session.id,
-      participants.map((p) => ({
-        participantId: p.id,
-        isTeam: p.isTeam,
-        placement: place[p.id],
-        points: game.config.trackScore ? parsePoints(pts[p.id] ?? '', false) : null,
-      })),
-    );
+    setError(null);
+    try {
+      await saveResult(
+        session.id,
+        participants.map((p) => ({
+          participantId: p.id,
+          isTeam: p.isTeam,
+          placement: place[p.id],
+          points: game.config.trackScore ? parsePoints(pts[p.id] ?? '', false) : null,
+        })),
+      );
+    } catch (e) {
+      setError(`Kunne ikke gemme: ${e instanceof Error ? e.message : String(e)}`);
+    }
   }
 
   return (
@@ -64,6 +71,7 @@ export function ResultEntry({ bundle }: { bundle: SessionBundle }) {
           )}
         </div>
       ))}
+      {error && <p class="warn" style="margin:0">{error}</p>}
       {editable && (
         <button class="primary big" disabled={!allPlaced} onClick={save}>
           {session.status === 'finished' ? 'Gem ændringer' : 'Gem resultat'}
