@@ -202,6 +202,19 @@ export async function finishSession(sessionId: string, manual?: Map<string, numb
   await save('sessions', { ...b.session, status: 'finished', ended_at: b.session.ended_at ?? nowIso() });
 }
 
+/** Starts a new game with the same game, options, seat order and teams. Returns the new session id. */
+export async function rematch(sessionId: string): Promise<string> {
+  const b = await loadSessionBundle(sessionId);
+  if (!b) throw new Error('Spillet findes ikke');
+  const teamIndex = new Map(b.teams.map((t, i) => [t.id, i]));
+  return startSession(
+    b.session.game_id,
+    b.session.options,
+    b.seats.map((s) => ({ playerId: s.player_id, teamIndex: s.team_id ? teamIndex.get(s.team_id) ?? null : null })),
+    b.teams.map((t) => t.name),
+  );
+}
+
 /** Puts a finished game back in progress. Placements are recomputed when it is finished again. */
 export async function reopenSession(sessionId: string): Promise<void> {
   const s = await db.sessions.get(sessionId);

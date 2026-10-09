@@ -57,3 +57,33 @@ describe('reopenSession', () => {
     expect(bundle.session.ended_at).toBeNull();
   });
 });
+
+describe('rematch', () => {
+  it('starts a new game with the same game, options, seats and teams', async () => {
+    const { rematch } = await import('../../src/db/actions');
+    const a = await addPlayer('Anna');
+    const b = await addPlayer('Bo');
+    const c = await addPlayer('Cille');
+    const id = await startSession('00000000-0000-4000-8000-000000000005', {}, [
+      { playerId: b.id, teamIndex: 1 }, { playerId: a.id, teamIndex: 0 }, { playerId: c.id, teamIndex: 0 },
+    ], ['Hold 1', 'Hold 2']);
+    const newId = await rematch(id);
+    expect(newId).not.toBe(id);
+    const old = (await loadSessionBundle(id))!;
+    const fresh = (await loadSessionBundle(newId))!;
+    expect(fresh.session).toMatchObject({ game_id: old.session.game_id, status: 'in_progress' });
+    expect(fresh.seats.map((s) => s.player_id)).toEqual([b.id, a.id, c.id]);
+    expect(fresh.teams.map((t) => t.name)).toEqual(['Hold 1', 'Hold 2']);
+    const teamName = (bundle: typeof fresh, pid: string) => bundle.teams.find((t) => t.id === bundle.seats.find((s) => s.player_id === pid)!.team_id)!.name;
+    expect(teamName(fresh, b.id)).toBe('Hold 2');
+    expect(teamName(fresh, a.id)).toBe('Hold 1');
+  });
+
+  it('keeps options such as the number of dice', async () => {
+    const { rematch } = await import('../../src/db/actions');
+    const a = await addPlayer('Anna');
+    const id = await startSession('00000000-0000-4000-8000-000000000001', { dice: 6 }, [{ playerId: a.id, teamIndex: null }], []);
+    const fresh = (await loadSessionBundle(await rematch(id)))!;
+    expect(fresh.session.options).toEqual({ dice: 6 });
+  });
+});

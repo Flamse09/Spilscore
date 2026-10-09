@@ -1,3 +1,4 @@
+import type { RecordInput } from '../stats/records';
 import type { ResultRow } from '../stats/stats';
 import { db, type SessionRow } from './schema';
 
@@ -125,4 +126,14 @@ export async function loadExportRows(): Promise<{ results: Record<string, unknow
     });
 
   return { results, entries: entryRows };
+}
+
+/** Results and score entries of every finished game of one game type, for records. */
+export async function loadRecordInput(gameId: string): Promise<RecordInput> {
+  const results = (await loadResultRows()).filter((r) => r.gameId === gameId);
+  const sessionIds = new Set(results.map((r) => r.sessionId));
+  const entries = (await db.score_entries.toArray())
+    .filter((e) => live(e) && sessionIds.has(e.session_id))
+    .map((e) => ({ sessionId: e.session_id, playerId: e.player_id, roundNo: e.round_no, category: e.category, points: e.points }));
+  return { results, entries };
 }

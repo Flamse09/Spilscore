@@ -1,22 +1,32 @@
 import { useState } from 'preact/hooks';
 import { gameDef } from '../../db/actions';
-import { loadResultRows } from '../../db/queries';
+import { loadRecordInput, loadResultRows } from '../../db/queries';
 import { db } from '../../db/schema';
 import {
   favoriteGame, headToHead, longestWinStreak, maxRoundScore, scoreSummary, summarize, type ResultRow,
 } from '../../stats/stats';
+import { computeRecords, type GameRecord } from '../../stats/records';
+import { RecordList } from '../RecordList';
 import { useLive } from '../useLive';
 
 export function Stats() {
-  const data = useLive(
-    async () => ({
-      rows: await loadResultRows(),
-      games: await db.games.toArray(),
+  const data = useLive(async () => {
+    const rows = await loadResultRows();
+    const games = await db.games.toArray();
+    const records: { gameId: string; name: string; list: GameRecord[] }[] = [];
+    for (const g of games) {
+      if (!rows.some((r) => r.gameId === g.id)) continue;
+      const list = computeRecords(gameDef(g), await loadRecordInput(g.id));
+      if (list.length) records.push({ gameId: g.id, name: g.name, list });
+    }
+    return {
+      rows,
+      games,
+      records,
       players: await db.players.toArray(),
       entries: (await db.score_entries.toArray()).filter((e) => !e.deleted_at && e.round_no !== null),
-    }),
-    [],
-  );
+    };
+  }, []);
   const [gameId, setGameId] = useState('');
   const [playerId, setPlayerId] = useState('');
   if (!data) return null;
@@ -71,6 +81,18 @@ export function Stats() {
           </div>
         </>
       )}
+
+      <h2>Rekorder</h2>
+      {(() => {
+        const shown = data.records.filter((r) => !gameId || r.gameId === gameId);
+        if (!shown.length) return <p class="muted">Ingen rekorder endnu.</p>;
+        return shown.map((r) => (
+          <div key={r.gameId} class="card">
+            {!gameId && <strong>{r.name}</strong>}
+            <RecordList records={r.list} nameOf={playerName} />
+          </div>
+        ));
+      })()}
 
       <h2>Spiller</h2>
       <select value={playerId} onChange={(e) => setPlayerId(e.currentTarget.value)}>
