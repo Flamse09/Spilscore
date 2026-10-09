@@ -56,6 +56,15 @@ describe('sessions', () => {
     expect(bundle.entries.find((e) => e.player_id === a.id)!.points).toBe(15);
   });
 
+  it('concurrent saves of the same new round leave one entry per player', async () => {
+    const [a, b] = await twoPlayers();
+    const id = await startSession(FIVE_HUNDRED, {}, [{ playerId: a.id, teamIndex: null }, { playerId: b.id, teamIndex: null }], []);
+    const pts = [{ playerId: a.id, points: 10 }, { playerId: b.id, points: 20 }];
+    await Promise.all([saveRound(id, 1, pts), saveRound(id, 1, pts)]);
+    const bundle = (await loadSessionBundle(id))!;
+    expect(bundle.entries).toHaveLength(2);
+  });
+
   it('undo removes the whole last round', async () => {
     const [a, b] = await twoPlayers();
     const id = await startSession(FIVE_HUNDRED, {}, [{ playerId: a.id, teamIndex: null }, { playerId: b.id, teamIndex: null }], []);

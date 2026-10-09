@@ -8,8 +8,8 @@ export function History() {
   const data = useLive(
     async () => ({
       list: await loadSessionSummaries(),
-      games: (await db.games.toArray()).filter((g) => !g.deleted_at),
-      players: (await db.players.toArray()).filter((p) => !p.deleted_at).sort((a, b) => a.name.localeCompare(b.name, 'da')),
+      games: await db.games.toArray(),
+      players: (await db.players.toArray()).sort((a, b) => a.name.localeCompare(b.name, 'da')),
     }),
     [],
   );

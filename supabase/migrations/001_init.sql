@@ -21,7 +21,8 @@ create table public.games (
   name text not null,
   type text not null check (type in ('open_rounds', 'fixed_rounds', 'scoresheet', 'result_only')),
   config jsonb not null,
-  built_in boolean not null default false
+  built_in boolean not null default false,
+  unique (key)
 );
 
 create table public.sessions (

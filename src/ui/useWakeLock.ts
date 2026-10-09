@@ -8,7 +8,13 @@ export function useWakeLock(active: boolean): void {
     let cancelled = false;
     const acquire = async () => {
       try {
-        lock = await navigator.wakeLock.request('screen');
+        const next = await navigator.wakeLock.request('screen');
+        if (cancelled) {
+          next.release().catch(() => {});
+          return;
+        }
+        lock?.release().catch(() => {});
+        lock = next;
       } catch {
         lock = null;
       }

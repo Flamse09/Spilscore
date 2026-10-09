@@ -108,14 +108,16 @@ export async function saveRound(
   points: { playerId: string; points: number }[],
   category: string | null = null,
 ): Promise<void> {
-  const existing = (await liveEntries(sessionId)).filter((e) => e.round_no === roundNo);
-  const rows: ScoreEntryRow[] = points.map((p) => {
-    const old = existing.find((e) => e.player_id === p.playerId);
-    return old
-      ? { ...old, points: p.points, category }
-      : { ...base(), session_id: sessionId, player_id: p.playerId, team_id: null, round_no: roundNo, category, points: p.points };
+  await db.transaction('rw', db.score_entries, db.outbox, async () => {
+    const existing = (await liveEntries(sessionId)).filter((e) => e.round_no === roundNo);
+    const rows: ScoreEntryRow[] = points.map((p) => {
+      const old = existing.find((e) => e.player_id === p.playerId);
+      return old
+        ? { ...old, points: p.points, category }
+        : { ...base(), session_id: sessionId, player_id: p.playerId, team_id: null, round_no: roundNo, category, points: p.points };
+    });
+    await save('score_entries', rows);
   });
-  await save('score_entries', rows);
   await refreshIfFinished(sessionId);
 }
 
@@ -129,17 +131,19 @@ export async function undoLastRound(sessionId: string): Promise<void> {
 }
 
 export async function setSheetValue(sessionId: string, playerId: string, category: string, points: number | null): Promise<void> {
-  const old = (await liveEntries(sessionId)).find((e) => e.player_id === playerId && e.category === category);
-  if (points === null) {
-    if (old) await save('score_entries', { ...old, deleted_at: nowIso() });
-  } else {
-    await save(
-      'score_entries',
-      old
-        ? { ...old, points }
-        : { ...base(), session_id: sessionId, player_id: playerId, team_id: null, round_no: null, category, points },
-    );
-  }
+  await db.transaction('rw', db.score_entries, db.outbox, async () => {
+    const old = (await liveEntries(sessionId)).find((e) => e.player_id === playerId && e.category === category);
+    if (points === null) {
+      if (old) await save('score_entries', { ...old, deleted_at: nowIso() });
+    } else {
+      await save(
+        'score_entries',
+        old
+          ? { ...old, points }
+          : { ...base(), session_id: sessionId, player_id: playerId, team_id: null, round_no: null, category, points },
+      );
+    }
+  });
   await refreshIfFinished(sessionId);
 }
 

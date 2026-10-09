@@ -11,7 +11,7 @@ export function Stats() {
   const data = useLive(
     async () => ({
       rows: await loadResultRows(),
-      games: (await db.games.toArray()).filter((g) => !g.deleted_at),
+      games: await db.games.toArray(),
       players: await db.players.toArray(),
       entries: (await db.score_entries.toArray()).filter((e) => !e.deleted_at && e.round_no !== null),
     }),

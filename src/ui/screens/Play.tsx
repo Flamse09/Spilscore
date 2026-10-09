@@ -23,7 +23,7 @@ export function Play({ id }: { id: string }) {
       {game.type === 'scoresheet' ? (
         <YatzySheet bundle={bundle} />
       ) : game.type === 'result_only' ? (
-        <ResultEntry bundle={bundle} />
+        <ResultEntry key={session.id} bundle={bundle} />
       ) : (
         <RoundsBoard bundle={bundle} />
       )}
