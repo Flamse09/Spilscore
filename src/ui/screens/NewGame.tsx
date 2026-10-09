@@ -3,6 +3,7 @@ import { addPlayer, gameDef, startSession } from '../../db/actions';
 import { byRecent, loadPlayerActivity } from '../../db/queries';
 import { db } from '../../db/schema';
 import { startProblem } from '../../games/validate';
+import { gameEmoji } from '../icons';
 import { navigate } from '../router';
 import { useLive } from '../useLive';
 
@@ -58,10 +59,11 @@ export function NewGame() {
   return (
     <>
       <h2>Spil</h2>
-      <div class="chips">
+      <div class="tiles">
         {data.games.map((g) => (
-          <button key={g.id} class={`chip ${g.id === gameId ? 'on' : ''}`} onClick={() => setGameId(g.id)}>
-            {g.name}
+          <button key={g.id} class={`tile ${g.id === gameId ? 'on' : ''}`} onClick={() => setGameId(g.id)}>
+            <span class="tile-icon">{gameEmoji(g.key)}</span>
+            <span>{g.name}</span>
           </button>
         ))}
       </div>
@@ -79,7 +81,8 @@ export function NewGame() {
         </div>
       ))}
 
-      <h2>Spillere <span class="muted">(rækkefølge = plads ved bordet)</span></h2>
+      <h2>Spillere</h2>
+      <p class="muted small" style="margin:-6px 0 10px">Tryk i den rækkefølge, I sidder ved bordet.</p>
       <div class="chips">
         {data.players.map((p) => {
           const seat = seats.indexOf(p.id);

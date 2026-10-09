@@ -9,16 +9,28 @@ function label(s: SyncStatus): string {
     case 'offline':
       return `Offline${waiting}`;
     case 'error':
-      return `⚠ Sync fejlede${waiting}`;
+      return `Sync fejlede${waiting}`;
     case 'syncing':
-      return '⟳ Synkroniserer';
+      return 'Synkroniserer';
     default:
-      return s.pending ? `⟳${waiting}` : '✓ Synkroniseret';
+      return s.pending ? `${s.pending} venter` : 'Synkroniseret';
   }
+}
+
+/** Dot colour: green = in sync, blue = working, orange = failed, grey = offline or signed out. */
+function tone(s: SyncStatus): string {
+  if (s.state === 'error') return 'bad';
+  if (s.state === 'signed-out' || s.state === 'offline') return 'off';
+  return s.pending || s.state === 'syncing' ? 'busy' : 'ok';
 }
 
 export function SyncBadge() {
   const [s, setS] = useState<SyncStatus>(getStatus());
   useEffect(() => subscribe(setS), []);
-  return <span class="badge" title={s.lastError ?? ''}>{label(s)}</span>;
+  return (
+    <span class={`badge pill ${tone(s)}`} title={s.lastError ?? ''}>
+      <span class="dot" />
+      {label(s)}
+    </span>
+  );
 }

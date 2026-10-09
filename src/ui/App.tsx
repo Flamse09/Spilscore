@@ -1,3 +1,4 @@
+import { Icon, type IconName } from './icons';
 import { href, useRoute, type Route } from './router';
 import { History } from './screens/History';
 import { Home } from './screens/Home';
@@ -8,12 +9,12 @@ import { Settings } from './screens/Settings';
 import { Stats } from './screens/Stats';
 import { SyncBadge } from './SyncBadge';
 
-const TABS: { label: string; route: Route }[] = [
-  { label: 'Hjem', route: { name: 'home' } },
-  { label: 'Spillere', route: { name: 'players' } },
-  { label: 'Historik', route: { name: 'history' } },
-  { label: 'Statistik', route: { name: 'stats' } },
-  { label: 'Indstillinger', route: { name: 'settings' } },
+const TABS: { label: string; icon: IconName; route: Route }[] = [
+  { label: 'Hjem', icon: 'home', route: { name: 'home' } },
+  { label: 'Spillere', icon: 'players', route: { name: 'players' } },
+  { label: 'Historik', icon: 'history', route: { name: 'history' } },
+  { label: 'Statistik', icon: 'stats', route: { name: 'stats' } },
+  { label: 'Mere', icon: 'settings', route: { name: 'settings' } },
 ];
 
 function Screen({ route }: { route: Route }) {
@@ -49,7 +50,8 @@ export function App() {
       <nav class="bottom">
         {TABS.map((t) => (
           <a key={t.label} href={href(t.route)} class={route.name === t.route.name ? 'active' : ''}>
-            {t.label}
+            <Icon name={t.icon} />
+            <span>{t.label}</span>
           </a>
         ))}
       </nav>
