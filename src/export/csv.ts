@@ -1,4 +1,4 @@
-const FORMULA_START = /^[=+\-@]/;
+const FORMULA_START = /^[=+\-@\t\r]/;
 
 function cell(v: unknown, sep: string): string {
   if (v === null || v === undefined) return '';
@@ -18,13 +18,22 @@ export function toCsv(rows: Record<string, unknown>[], sep = ';'): string {
 export async function shareOrDownload(filename: string, csv: string): Promise<void> {
   const file = new File(['﻿' + csv], filename, { type: 'text/csv' });
   if (navigator.canShare?.({ files: [file] })) {
-    await navigator.share({ files: [file], title: filename });
+    try {
+      await navigator.share({ files: [file], title: filename });
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') return;
+      throw e;
+    }
     return;
   }
   const url = URL.createObjectURL(file);
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => {
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, 1000);
 }

@@ -14,6 +14,10 @@ describe('toCsv', () => {
     expect(toCsv([{ a: '=SUM(A1)', b: -5, c: '-5' }])).toBe("a;b;c\r\n'=SUM(A1);-5;-5");
   });
 
+  it('neutralises text starting with a tab or carriage return', () => {
+    expect(toCsv([{ a: '\t=1' }])).toBe("a\r\n'\t=1");
+  });
+
   it('returns an empty string for no rows', () => {
     expect(toCsv([])).toBe('');
   });
