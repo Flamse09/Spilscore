@@ -113,15 +113,35 @@ alter table public.session_teams enable row level security;
 alter table public.session_players enable row level security;
 alter table public.score_entries enable row level security;
 
-create policy own_rows on public.players for all to authenticated
+create policy own_select on public.players for select to authenticated
+  using (owner_id = (select auth.uid()));
+create policy own_insert on public.players for insert to authenticated
+  with check (owner_id = (select auth.uid()));
+create policy own_update on public.players for update to authenticated
   using (owner_id = (select auth.uid())) with check (owner_id = (select auth.uid()));
-create policy own_rows on public.sessions for all to authenticated
+create policy own_select on public.sessions for select to authenticated
+  using (owner_id = (select auth.uid()));
+create policy own_insert on public.sessions for insert to authenticated
+  with check (owner_id = (select auth.uid()));
+create policy own_update on public.sessions for update to authenticated
   using (owner_id = (select auth.uid())) with check (owner_id = (select auth.uid()));
-create policy own_rows on public.session_teams for all to authenticated
+create policy own_select on public.session_teams for select to authenticated
+  using (owner_id = (select auth.uid()));
+create policy own_insert on public.session_teams for insert to authenticated
+  with check (owner_id = (select auth.uid()));
+create policy own_update on public.session_teams for update to authenticated
   using (owner_id = (select auth.uid())) with check (owner_id = (select auth.uid()));
-create policy own_rows on public.session_players for all to authenticated
+create policy own_select on public.session_players for select to authenticated
+  using (owner_id = (select auth.uid()));
+create policy own_insert on public.session_players for insert to authenticated
+  with check (owner_id = (select auth.uid()));
+create policy own_update on public.session_players for update to authenticated
   using (owner_id = (select auth.uid())) with check (owner_id = (select auth.uid()));
-create policy own_rows on public.score_entries for all to authenticated
+create policy own_select on public.score_entries for select to authenticated
+  using (owner_id = (select auth.uid()));
+create policy own_insert on public.score_entries for insert to authenticated
+  with check (owner_id = (select auth.uid()));
+create policy own_update on public.score_entries for update to authenticated
   using (owner_id = (select auth.uid())) with check (owner_id = (select auth.uid()));
 
 create policy read_games on public.games for select to anon, authenticated
@@ -131,6 +151,8 @@ create policy insert_own_games on public.games for insert to authenticated
 create policy update_own_games on public.games for update to authenticated
   using (owner_id = (select auth.uid())) with check (owner_id = (select auth.uid()) and not built_in);
 
+-- Supabase default privileges grant ALL on new tables; strip them so there is no DELETE anywhere (deletion is soft).
+revoke all on public.players, public.games, public.sessions, public.session_teams, public.session_players, public.score_entries from anon, authenticated;
 grant select, insert, update on
   public.players, public.games, public.sessions, public.session_teams, public.session_players, public.score_entries
   to authenticated;
@@ -155,6 +177,7 @@ join public.players p on p.id = sp.player_id
 left join public.session_teams t on t.id = sp.team_id
 where s.status = 'finished' and s.deleted_at is null and sp.deleted_at is null;
 
+revoke all on public.v_results from anon, authenticated;
 grant select on public.v_results to authenticated;
 
 insert into public.games (id, owner_id, created_at, updated_at, key, name, type, config, built_in) values

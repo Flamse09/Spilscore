@@ -1,5 +1,6 @@
--- Read-only login for Power BI. Replace the password before running; never commit the real one.
-create role powerbi_reader login password 'SKIFT-MIG-FØR-KØRSEL';
+-- Read-only login for Power BI.
+-- Set the password separately, never commit it: alter role powerbi_reader password '<your password>';
+create role powerbi_reader login;
 grant usage on schema public to powerbi_reader;
 grant select on
   public.players, public.games, public.sessions, public.session_teams,
