@@ -87,3 +87,50 @@ describe('rematch', () => {
     expect(fresh.session.options).toEqual({ dice: 6 });
   });
 });
+
+describe('saveTraitorsResult', () => {
+  it('stores roles as teams, outcomes as entries, silver as score and the winning side', async () => {
+    const { saveTraitorsResult } = await import('../../src/db/actions');
+    const a = await addPlayer('Anna');
+    const b = await addPlayer('Bo');
+    const c = await addPlayer('Cille');
+    const d = await addPlayer('Ditte');
+    const id = await startSession('00000000-0000-4000-8000-000000000009', { traitors: 1 }, [a, b, c, d].map((p) => ({ playerId: p.id, teamIndex: null })), []);
+    await saveTraitorsResult(id, [
+      { playerId: a.id, role: 'traitor', outcome: 'overlevede', roundOut: null, silver: 3 },
+      { playerId: b.id, role: 'loyal', outcome: 'myrdet', roundOut: 1, silver: 0 },
+      { playerId: c.id, role: 'loyal', outcome: 'forvist', roundOut: 2, silver: 0 },
+      { playerId: d.id, role: 'loyal', outcome: 'overlevede', roundOut: null, silver: 1 },
+    ], 'traitor');
+    const bundle = (await loadSessionBundle(id))!;
+    expect(bundle.session.status).toBe('finished');
+    expect(bundle.teams.map((t) => t.name).sort()).toEqual(['Forrædere', 'Trofaste']);
+    const seat = (pid: string) => bundle.seats.find((s) => s.player_id === pid)!;
+    const team = (pid: string) => bundle.teams.find((t) => t.id === seat(pid).team_id)!.name;
+    expect(team(a.id)).toBe('Forrædere');
+    expect(team(b.id)).toBe('Trofaste');
+    expect(seat(a.id)).toMatchObject({ placement: 1, is_winner: true, final_score: 3 });
+    expect(seat(d.id)).toMatchObject({ placement: 2, is_winner: false, final_score: 1 });
+    const entry = bundle.entries.find((e) => e.player_id === c.id)!;
+    expect(entry).toMatchObject({ category: 'forvist', round_no: 2, points: 0 });
+  });
+
+  it('updates instead of duplicating when edited', async () => {
+    const { saveTraitorsResult } = await import('../../src/db/actions');
+    const a = await addPlayer('Anna');
+    const b = await addPlayer('Bo');
+    const c = await addPlayer('Cille');
+    const id = await startSession('00000000-0000-4000-8000-000000000009', { traitors: 1 }, [a, b, c].map((p) => ({ playerId: p.id, teamIndex: null })), []);
+    const input = [
+      { playerId: a.id, role: 'traitor' as const, outcome: 'forvist' as const, roundOut: 1, silver: 0 },
+      { playerId: b.id, role: 'loyal' as const, outcome: 'overlevede' as const, roundOut: null, silver: 2 },
+      { playerId: c.id, role: 'loyal' as const, outcome: 'overlevede' as const, roundOut: null, silver: 2 },
+    ];
+    await saveTraitorsResult(id, input, 'loyal');
+    await saveTraitorsResult(id, input, 'loyal');
+    const bundle = (await loadSessionBundle(id))!;
+    expect(bundle.teams).toHaveLength(2);
+    expect(bundle.entries).toHaveLength(3);
+    expect(bundle.seats.find((s) => s.player_id === b.id)).toMatchObject({ is_winner: true, final_score: 2 });
+  });
+});

@@ -31,6 +31,8 @@ export interface GameConfig {
   /** Short scoring hint shown on the round entry sheet. */
   hint?: string;
   sheet?: 'yatzy';
+  /** result_only game whose result is entered as hidden roles revealed at the end. */
+  roles?: 'traitors';
   trackScore?: boolean;
   options?: OptionDef[];
 }

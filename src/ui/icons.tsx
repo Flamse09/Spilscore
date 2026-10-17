@@ -36,6 +36,8 @@ export function gameEmoji(key: string): string {
       return '⛳';
     case 'mexicantrain':
       return '🚂';
+    case 'forraeder':
+      return '🗡️';
     default:
       return '⭐';
   }

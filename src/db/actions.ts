@@ -1,5 +1,6 @@
 import { BUILT_IN_GAMES } from '../games/builtins';
 import { computeResults } from '../games/results';
+import { TEAM_NAME, type TraitorOutcome, type TraitorRole } from '../games/traitors';
 import type { GameDef, Scoring, TeamMode } from '../games/types';
 import { base, nowIso, save } from './repo';
 import {
@@ -188,6 +189,50 @@ function storedPlacements(b: SessionBundle): Map<string, number> {
   const m = new Map<string, number>();
   for (const s of b.seats) if (s.placement !== null) m.set(s.team_id ?? s.player_id, s.placement);
   return m;
+}
+
+export interface TraitorInput {
+  playerId: string;
+  role: TraitorRole;
+  outcome: TraitorOutcome;
+  roundOut: number | null;
+  silver: number;
+}
+
+/**
+ * Forræder result, entered once roles are revealed: roles become the two session teams,
+ * each player's outcome is one score entry (category = outcome, round = round out, points = silver bars),
+ * and everyone on the winning side gets placement 1.
+ */
+export async function saveTraitorsResult(sessionId: string, players: TraitorInput[], winner: TraitorRole): Promise<void> {
+  const b = await loadSessionBundle(sessionId);
+  if (!b) throw new Error('Spillet findes ikke');
+  const roles: TraitorRole[] = ['loyal', 'traitor'];
+  const teams = {} as Record<TraitorRole, TeamRow>;
+  const newTeams: TeamRow[] = [];
+  roles.forEach((role, i) => {
+    const existing = b.teams.find((t) => t.name === TEAM_NAME[role]);
+    teams[role] = existing ?? { ...base(), session_id: sessionId, name: TEAM_NAME[role], seat: i };
+    if (!existing) newTeams.push(teams[role]);
+  });
+  if (newTeams.length) await save('session_teams', newTeams);
+
+  const byPlayer = new Map(players.map((p) => [p.playerId, p]));
+  await save(
+    'session_players',
+    b.seats.map(({ name, ...seat }) => ({ ...seat, team_id: teams[byPlayer.get(seat.player_id)?.role ?? 'loyal'].id })),
+  );
+
+  const entryRows: ScoreEntryRow[] = players.map((p) => {
+    const old = b.entries.find((e) => e.player_id === p.playerId);
+    const fields = { category: p.outcome, round_no: p.outcome === 'overlevede' ? null : p.roundOut, points: p.silver };
+    return old
+      ? { ...old, ...fields }
+      : { ...base(), session_id: sessionId, player_id: p.playerId, team_id: null, ...fields };
+  });
+  await save('score_entries', entryRows);
+
+  await finishSession(sessionId, new Map(players.map((p) => [p.playerId, p.role === winner ? 1 : 2])));
 }
 
 export async function finishSession(sessionId: string, manual?: Map<string, number>): Promise<void> {

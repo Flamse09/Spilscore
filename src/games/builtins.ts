@@ -99,4 +99,18 @@ export const BUILT_IN_GAMES: GameDef[] = [
       })),
     },
   },
+  {
+    id: '00000000-0000-4000-8000-000000000009',
+    key: 'forraeder',
+    name: 'Forræder',
+    type: 'result_only',
+    config: {
+      scoring: 'high',
+      minPlayers: 3,
+      teams: 'none',
+      roles: 'traitors',
+      trackScore: true,
+      options: [{ key: 'traitors', label: 'Forrædere', values: [1, 2, 3], default: 1 }],
+    },
+  },
 ];

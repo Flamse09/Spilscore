@@ -8,7 +8,7 @@ describe('BUILT_IN_GAMES', () => {
   });
 
   it('defines the built-in games', () => {
-    expect(BUILT_IN_GAMES.map((g) => g.key)).toEqual(['yatzy', '500', 'flip7', 'davoserjas', 'hitster', 'uno', 'minigolf', 'mexicantrain']);
+    expect(BUILT_IN_GAMES.map((g) => g.key)).toEqual(['yatzy', '500', 'flip7', 'davoserjas', 'hitster', 'uno', 'minigolf', 'mexicantrain', 'forraeder']);
   });
 
   it('gives Davoserjas seven rounds (6 = all rules, 7 = Kabalen), lowest wins, 3-7 players', () => {

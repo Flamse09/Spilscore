@@ -1,6 +1,7 @@
 import { loadSessionBundle } from '../../db/actions';
 import { ResultBanner } from '../ResultBanner';
 import { ResultEntry } from '../ResultEntry';
+import { TraitorsEntry } from '../TraitorsEntry';
 import { RoundsBoard } from '../RoundsBoard';
 import { SessionMenu } from '../SessionMenu';
 import { useLive } from '../useLive';
@@ -23,7 +24,11 @@ export function Play({ id }: { id: string }) {
       {game.type === 'scoresheet' ? (
         <YatzySheet bundle={bundle} />
       ) : game.type === 'result_only' ? (
-        <ResultEntry key={session.id} bundle={bundle} />
+        game.config.roles === 'traitors' ? (
+          <TraitorsEntry key={session.id} bundle={bundle} />
+        ) : (
+          <ResultEntry key={session.id} bundle={bundle} />
+        )
       ) : (
         <RoundsBoard bundle={bundle} />
       )}
