@@ -1,7 +1,8 @@
 name: Supabase keep-alive
 on:
   schedule:
-    - cron: '0 6 * * 1,4'
+    # Supabase pauses free projects without "a few user requests to the database each day" for a week.
+    - cron: '0 6 * * *'
   workflow_dispatch:
 
 permissions:
@@ -16,7 +17,9 @@ jobs:
       - name: Ping Supabase
         run: |
           set -a; source .env; set +a
-          curl -fsS "$VITE_SUPABASE_URL/rest/v1/games?select=id&limit=1" -H "apikey: $VITE_SUPABASE_KEY"
+          for q in "games?select=id&limit=1" "games?select=key,name" "games?select=id&built_in=eq.true"; do
+            curl -fsS "$VITE_SUPABASE_URL/rest/v1/$q" -H "apikey: $VITE_SUPABASE_KEY" > /dev/null
+          done
       - name: Keep this schedule enabled
         env:
           GH_TOKEN: ${{ github.token }}

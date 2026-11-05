@@ -210,7 +210,7 @@ Alle kort gives. Hver spiller får `k = floor(52 / N)` kort, og `r = 52 mod N` k
 - **Konflikter:** nyeste `updated_at` vinder.
 - **Fejl:** rækker bliver i outbox og forsøges igen med eksponentiel backoff (maks. 5 min). Status vises i headeren. Data på enheden slettes aldrig af en fejlet sync.
 - **Login:** Supabase e-mail og adgangskode, uden bekræftelsesmail ("Confirm email" er slået fra). Der sendes ingen mails. Magic link er fravalgt, fordi linket på iOS åbner i Safari og ikke i den installerede PWA. Kode på mail er fravalgt (ændret 2026-10-09), fordi Supabase kun lader skabelonerne redigere med egen SMTP, og standardmailen indeholder kun et link. iOS-nøgleringen kan gemme adgangskoden. Sessionen fornyes automatisk. Appen virker fuldt ud uden login, og sync starter, når man er logget ind.
-- **Keep-alive:** et GitHub Actions-cronjob kører hver mandag og torsdag og laver en let `select` mod Supabase, så gratisprojektet ikke går i dvale.
+- **Keep-alive:** et GitHub Actions-cronjob kører hver dag og laver tre lette `select`-forespørgsler mod Supabase (Supabase kræver "a few user requests to the database each day"), så gratisprojektet ikke går i dvale.
 
 ## 7. Fejlhåndtering
 
